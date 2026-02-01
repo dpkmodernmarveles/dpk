@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Details</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<style>
+body{margin:0;font-family:Arial;background:#f4f6f8}
+
+/* HEADER */
+header{
+ background:linear-gradient(90deg,#6a11cb,#2575fc);
+ color:#fff;padding:15px;text-align:center;
+ position:sticky;top:0;z-index:1000;
+}
+
+/* PRODUCT */
+.product-wrap{
+ max-width:1100px;margin:20px auto;
+ background:#fff;border-radius:12px;
+ padding:20px;display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:25px;
+}
+
+/* IMAGE SLIDER */
+.img-slider{
+ display:flex;gap:15px;
+ overflow-x:auto;
+ scroll-snap-type:x mandatory;
+}
+.img-slider img{
+ min-width:100%;
+ height:320px;
+ object-fit:contain;
+ border-radius:10px;
+ scroll-snap-align:center;
+}
+
+.price{color:#0d6efd;font-size:22px;font-weight:bold}
+
+/* BUTTONS */
+.btn{
+ display:inline-block;margin:6px 6px 0 0;
+ padding:10px 16px;border-radius:6px;
+ color:#fff;text-decoration:none;font-size:14px
+}
+.blue{background:#0d6efd}
+.green{background:#25d366}
+.orange{background:#fd7e14}
+.red{background:#dc3545}
+
+/* RELATED */
+.related-section{
+ max-width:1100px;margin:30px auto
+}
+.related-title{
+ font-size:22px;margin:10px 15px
+}
+.related-row{
+ display:flex;gap:15px;
+ overflow-x:auto;
+ padding:10px 15px;
+ scroll-snap-type:x mandatory;
+}
+.related-card{
+ min-width:180px;background:#fff;
+ border-radius:10px;padding:10px;
+ box-shadow:0 4px 10px rgba(0,0,0,.1);
+ text-align:center;
+ scroll-snap-align:start;
+ cursor:pointer;
+}
+.related-card img{
+ width:100%;height:120px;
+ object-fit:contain
+}
+.related-card h4{
+ font-size:14px;margin:8px 0
+}
+.related-card .price{
+ font-size:14px
+}
+
+/* FOOTER */
+footer{
+ background:#222;color:#aaa;
+ text-align:center;padding:15px;margin-top:40px
+}
+
+/* MOBILE */
+@media(max-width:768px){
+ .product-wrap{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+ <h2>Product Details</h2>
+</header>
+
+<!-- PRODUCT DETAILS -->
+<section class="product-wrap">
+ <div class="img-slider" id="imgSlider"></div>
+
+ <div>
+  <h2 id="pName"></h2>
+  <p id="pDesc"></p>
+  <p class="price">Rs.<span id="pPrice"></span></p>
+
+  <a href="#" class="btn blue" onclick="addToCart()">Add to Cart</a>
+  <a href="#" class="btn green" onclick="orderWhatsApp()">
+   <i class="fab fa-whatsapp"></i> Order
+  </a>
+  <a href="index.html" class="btn orange">← Back</a>
+ </div>
+</section>
+
+<!-- RELATED PRODUCTS -->
+<section class="related-section">
+ <div class="related-title">Related Products</div>
+ <div class="related-row" id="relatedRow"></div>
+</section>
+
+<footer>© 2026 Live Online Shop</footer>
+
+<script>
+const sheetUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vSjm-ddHMfcl_riEyAOYqjqh1jwBpmdPiYQUsjT_3oqihp-6O9xK-PZtTexdfhlrA/pub?output=csv";
+
+const params=new URLSearchParams(window.location.search);
+const productId=params.get("id");
+
+let products=[],currentProduct={};
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
+
+/* LOAD DATA */
+Papa.parse(sheetUrl,{
+ download:true,
+ header:true,
+ complete:r=>{
+  products=r.data.filter(p=>p['Product ID']);
+  loadProduct();
+ }
+});
+
+function loadProduct(){
+ currentProduct=products.find(p=>p['Product ID']===productId);
+ if(!currentProduct) return;
+
+ pName.innerText=currentProduct['Product Name'];
+ pDesc.innerText=currentProduct['Description'];
+ pPrice.innerText=currentProduct['Price (Rs)'];
+
+ /* IMAGE SLIDER */
+ imgSlider.innerHTML="";
+ let imgs=(currentProduct['Images']||currentProduct['Main Image']).split("|");
+ imgs.forEach(src=>{
+  imgSlider.innerHTML+=`<img src="${src.trim()}">`;
+ });
+
+ loadRelated();
+}
+
+/* RELATED PRODUCTS */
+function loadRelated(){
+ let related=products.filter(p=>
+  p['Category']===currentProduct['Category'] &&
+  p['Product ID']!==productId
+ ).slice(0,10);
+
+ relatedRow.innerHTML="";
+ related.forEach(p=>{
+  relatedRow.innerHTML+=`
+   <div class="related-card" onclick="openRelated('${p['Product ID']}')">
+    <img src="${p['Main Image']}">
+    <h4>${p['Product Name']}</h4>
+    <div class="price">Rs.${p['Price (Rs)']}</div>
+   </div>`;
+ });
+}
+
+function openRelated(id){
+ window.location.href=`product.html?id=${id}`;
+}
+
+/* ADD TO CART – FIXED */
+function addToCart(){
+ let exist=cart.find(i=>i.id===currentProduct['Product ID']);
+ if(exist){
+  exist.qty+=1;
+ }else{
+  cart.push({
+   id:currentProduct['Product ID'],
+   name:currentProduct['Product Name'],
+   price:parseFloat(currentProduct['Price (Rs)']),
+   qty:1
+  });
+ }
+ localStorage.setItem("cart",JSON.stringify(cart));
+ alert("✅ Added to cart");
+}
+
+/* WHATSAPP */
+function orderWhatsApp(){
+ let msg=`🛍️ *${currentProduct['Product Name']}*\nID: ${currentProduct['Product ID']}\nPrice: Rs.${currentProduct['Price (Rs)']}`;
+ window.open(`https://wa.me/94725989935?text=${encodeURIComponent(msg)}`);
+}
+</script>
+
+</body>
+</html>

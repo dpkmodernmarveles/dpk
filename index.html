@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Shop</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body{font-family:Arial;background:#f5f5f5;margin:0;overflow-x:hidden}
+
+/* HEADER */
+header{
+ background:linear-gradient(90deg,#6a11cb,#2575fc);color:#fff;padding:15px;
+ display:flex;justify-content:space-between;align-items:center;
+ position:sticky;top:0;z-index:1000;
+}
+.header-left{display:flex;align-items:center;gap:12px}
+.menu-btn{font-size:22px;cursor:pointer;user-select:none}
+.cart{cursor:pointer;position:relative}
+
+/* MINI-CART */
+#miniCart{
+ display:none;
+ position:absolute;top:45px;right:0;
+ width:300px;
+ background:#fff;box-shadow:0 5px 15px rgba(0,0,0,.2);
+ border-radius:10px;padding:10px;
+ z-index:1500;
+ max-height:400px;
+ overflow-y:auto;
+}
+#miniCart.show{display:block;}
+.miniItem{display:flex;justify-content:space-between;margin:6px 0;padding:5px;border-bottom:1px solid #eee}
+.miniItem button{padding:2px 6px;margin-left:2px;background:#0d6efd;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:12px}
+
+/* SIDE MENU OFF-CANVAS */
+.side-menu{
+ position:fixed;top:0;left:0;
+ width:250px;height:100%;
+ background:#fff;
+ box-shadow:2px 0 10px rgba(0,0,0,.2);
+ padding:20px;
+ transform: translateX(-100%);
+ transition: transform .3s ease;
+ z-index:2000;
+ overflow-y:auto;
+}
+.side-menu.show{transform: translateX(0);}
+.side-menu h3{margin-top:0;margin-bottom:10px}
+.side-menu button{
+ width:100%;margin:6px 0;
+ display:flex;align-items:center;gap:10px;
+ background:#f1f1f1;color:#000;
+ border:none;padding:10px;border-radius:5px;
+ cursor:pointer;
+ text-align:left;
+ font-size:16px;
+}
+.side-menu button i{width:20px;text-align:center}
+
+/* PRODUCTS */
+.products{padding:20px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.grid{display:grid;gap:20px}
+@media(min-width:1200px){.grid{grid-template-columns:repeat(5,1fr)}}
+@media(max-width:1199px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.grid{grid-template-columns:repeat(2,1fr);
+    gap:12px;
+  }}
+
+.card{
+ background:#fff;padding:15px;border-radius:10px;
+ box-shadow:0 3px 6px rgba(0,0,0,.1);text-align:center;
+ cursor:pointer;
+ transition:.3s;
+ position:relative;
+}
+.card:hover{
+ transform:translateY(-5px);
+ box-shadow:0 8px 20px rgba(0,0,0,.15);
+}
+.card img{width:100%;height:130px;object-fit:contain}
+.price{color:#0d6efd;font-weight:bold}
+.stock{position:absolute;top:10px;left:10px;padding:2px 6px;border-radius:4px;font-size:12px;color:#fff;font-weight:bold}
+
+/* CART BAR */
+.cart-bar{
+ position:sticky;bottom:0;background:#fff;
+ padding:10px;box-shadow:0 -2px 5px rgba(0,0,0,.1);
+ display:flex;justify-content:space-between
+}
+
+/* MODALS */
+#cartModal,#productModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000}
+.cartBox,.productBox{
+ background:#fff;max-width:400px;margin:80px auto;
+ padding:15px;border-radius:10px
+}
+.cartItem{display:flex;justify-content:space-between;margin:8px 0}
+
+/* OTHER */
+.whatsapp{background:#25d366;color:#fff;padding:12px;border:none;width:100%}
+.pagination{text-align:center;margin:20px}
+footer{background:#222;color:#fff;text-align:center;padding:15px}
+.whatsapp-float{
+ position:fixed;bottom:80px;right:20px;
+ background:#25d366;color:#fff;
+ font-size:40px;padding:10px 20px;border-radius:25%
+}
+.close{
+  text-align:right;
+  background:red;
+  color:white;
+}
+.btn{
+ display:inline-block;margin:6px 6px 0 0;
+ padding:10px 16px;border-radius:6px;
+ color:#fff;text-decoration:none;font-size:14px
+}
+
+.green{background:#25d366}
+/* SKELETON */
+.skeleton{
+ background:linear-gradient(90deg,#eee,#f5f5f5,#eee);
+ height:260px;border-radius:10px;
+ animation:shimmer 1.5s infinite;
+}
+@keyframes shimmer{
+ 0%{background-position:-400px}
+ 100%{background-position:400px}
+}
+
+/* OVERLAY WHEN MENU OPEN */
+#overlay{
+ display:none;
+ position:fixed;inset:0;
+ background:rgba(0,0,0,0.3);
+ z-index:1500;
+}
+#overlay.show{display:block;}
+</style>
+</head>
+<body>
+
+<!-- SIDE CATEGORY MENU -->
+<div id="sideMenu" class="side-menu">
+ <h3>Categories</h3>
+ <button onclick="selectCategory('All')"><i class="fas fa-border-all"></i> All</button>
+ <button onclick="selectCategory('Kitchen Items')"><i class="fas fa-utensils"></i> Kitchen Items</button>
+ <button onclick="selectCategory('Baby & Kids')"><i class="fas fa-baby"></i> Baby & Kids</button>
+ <button onclick="selectCategory('Electronics/Power Bank')"><i class="fas fa-plug"></i> Electronics</button>
+ <button onclick="selectCategory('Women/Beauty')"><i class="fas fa-spa"></i> Women / Beauty</button>
+ <button onclick="selectCategory('Home Essentials')"><i class="fas fa-home"></i> Household items</button>
+  <button onclick="selectCategory('Health')"><i class="fas fa-hospital"></i> Health</button>
+ <button onclick="selectCategory('')"><i class="fas fa-bath"></i>Bathroom products</button>
+
+ <br>
+ <h3>content us</h3>
+ <hr>
+ <h4>DPK Modern Marvels</h4>
+ <h4>0725989935</h4>
+   <a href="#" class="btn green" onclick="orderWhatsApp()">
+   <i class="fab fa-whatsapp"></i> whatsapp
+  </a>
+
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" onclick="closeMenu()"></div>
+
+<header>
+ <div class="header-left">
+  <i class="fas fa-bars menu-btn" onclick="toggleMenu()"></i>
+  <h2 style="margin:0">DPK Modern Mravels</h2>
+
+ </div>
+ <div class="cart" onclick="toggleMiniCart()">🛒 Cart (<span id="cartCount">0</span>)</div>
+
+</header>
+
+<!-- MINI-CART -->
+<div id="miniCart"></div>
+
+<div style="padding:15px">
+ <div class="filters">
+   <input type="text" id="searchInput" placeholder="🔍 Search products..." onkeyup="searchProducts()" style="flex:1;padding:10px;font-size:16px">
+   <select id="sortSelect" onchange="sortProducts()" style="padding:10px;font-size:16px">
+     <option value="default">Sort By</option>
+     <option value="low">Price: Low → High</option>
+     <option value="high">Price: High → Low</option>
+   </select>
+ </div>
+</div>
+
+<section class="products">
+ <div class="grid" id="productGrid"></div>
+</section>
+
+<div class="pagination">
+ <button onclick="prevPage()">⬅ Prev</button>
+ <span id="pageInfo"></span>
+ <button onclick="nextPage()">Next ➡</button>
+</div>
+
+<div class="cart-bar">
+ <div>Total Items: <span id="cartCountBottom">0</span></div>
+ <button onclick="openCart()">View Cart</button>
+</div>
+
+<!-- CART MODAL -->
+<div id="cartModal">
+ <div class="cartBox">
+  <h3>Your Cart</h3>
+  <div id="cartItems"></div>
+  <h4>Total: Rs.<span id="total">0</span></h4>
+  <button class="whatsapp" onclick="whatsappOrder()">Order via WhatsApp</button>
+  <button onclick="closeCart()">Close</button>
+ </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div id="productModal">
+ <div class="productBox">
+  <h3 id="pName"></h3>
+  <img id="pImg" style="width:100%;height:200px;object-fit:contain"><p id="pDesc"></p>
+<a href="#" id="moreLink" style="color:#0d6efd;font-weight:bold;display:inline-block;margin-top:8px;">
+  More →
+</a>
+  <p class="price">Rs.<span id="pPrice"></span></p>
+  <button class="whatsapp" onclick="shareProduct()">📤 Share Product</button>
+  <button class="close" onclick="closeProduct()" >Close</button>
+ </div>
+</div>
+
+<a href="https://wa.me/94725989935" target="_blank" class="whatsapp-float">
+ <i class="fab fa-whatsapp"></i>
+</a>
+
+<footer>© 2026 DPK Creation. All Rights Reserved.</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<script>
+const sheetUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vSjm-ddHMfcl_riEyAOYqjqh1jwBpmdPiYQUsjT_3oqihp-6O9xK-PZtTexdfhlrA/pub?output=csv";
+let products=[],filteredProducts=[];
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
+let page=1,perPage=20;
+let activeCategory="All";
+let currentProductId="";
+
+updateCartCount();
+showSkeleton();
+
+/* Load Google Sheet */
+Papa.parse(sheetUrl,{
+ download:true,
+ header:true,
+ complete: r=>{
+  products=r.data.filter(p=>p['Product Name']);
+  products.forEach(p=>{
+   p['Stock'] = "In Stock"; 
+  });
+  applyFilters();
+ }
+});
+
+/* MENU FUNCTIONS */
+function toggleMenu(){
+ document.getElementById("sideMenu").classList.toggle("show");
+ document.getElementById("overlay").classList.toggle("show");
+}
+function closeMenu(){
+ document.getElementById("sideMenu").classList.remove("show");
+ document.getElementById("overlay").classList.remove("show");
+}
+
+function selectCategory(c){
+ activeCategory=c;
+ page=1;
+ closeMenu();
+ applyFilters();
+}
+
+/* PRODUCTS */
+function showSkeleton(){
+ productGrid.innerHTML=Array(perPage).fill(`<div class="skeleton"></div>`).join("");
+}
+function applyFilters(){
+ let data=[...products];
+ if(activeCategory!=="All")
+  data=data.filter(p=>p['Category']===activeCategory);
+ let key=searchInput.value.toLowerCase();
+ if(key)
+  data=data.filter(p=>
+   p['Product Name'].toLowerCase().includes(key) ||
+   (p['Description']||'').toLowerCase().includes(key)
+  );
+ filteredProducts=data;
+ render();
+}
+function sortProducts(){
+ let s=sortSelect.value;
+ if(s==='low') filteredProducts.sort((a,b)=>parseFloat(a['Price (Rs)'])-parseFloat(b['Price (Rs)']));
+ if(s==='high') filteredProducts.sort((a,b)=>parseFloat(b['Price (Rs)'])-parseFloat(a['Price (Rs)']));
+ render();
+}
+function render(){
+ let start=(page-1)*perPage,end=start+perPage;
+ productGrid.innerHTML="";
+ filteredProducts.slice(start,end).forEach((p,i)=>{
+  let stockClass = p['Stock']==="In Stock" ? "green" : "red";
+  productGrid.innerHTML+=`
+  <div class="card" onclick="openProduct('${p['Product Name']}','${p['Main Image']}','${p['Description']||''}',${p['Price (Rs)']},'${p['Product ID']}')">
+   <span class="stock" style="background:${p['Stock']==='In Stock'?'#28a745':'#dc3545'}">${p['Stock']}</span>
+   <img src="${p['Main Image']}" loading="lazy">
+   <h4>${p['Product Name']}</h4>
+   <div class="price">Rs.${p['Price (Rs)']}</div>
+   <select id="q${i}">${[1,2,3,4,5].map(n=>`<option>${n}</option>`).join("")}</select>
+   <button onclick="event.stopPropagation(); addToCart('${p['Product Name']}',${p['Price (Rs)']},'q${i}','${p['Product ID']}')">
+    Add to Cart
+   </button>
+  </div>`;
+ });
+ pageInfo.innerText=`Page ${page}`;
+}
+
+/* MINI-CART */
+function toggleMiniCart(){
+ let mc=document.getElementById("miniCart");
+ mc.classList.toggle("show");
+ showMiniCart();
+}
+function showMiniCart(){
+ let mc=document.getElementById("miniCart");
+ mc.innerHTML="";
+ cart.forEach((i,x)=>{
+  mc.innerHTML+=`<div class="miniItem">
+    <div>${i.name}<br>Rs.${i.price} × ${i.qty}</div>
+    <div>
+     <button onclick="changeQty(${x},1)">+</button>
+     <button onclick="changeQty(${x},-1)">−</button>
+    </div>
+  </div>`;
+ });
+ mc.innerHTML+=cart.length?`<hr><button style="width:100%;padding:10px;background:#0d6efd;color:#fff;border:none;border-radius:5px;" onclick="openCart();toggleMiniCart()">Go to Cart</button>`:'<p style="text-align:center;">Cart is empty</p>';
+}
+
+/* CART FUNCTIONS */
+function addToCart(name,price,selectId,id){
+ let qty=parseInt(document.getElementById(selectId).value);
+ let existing=cart.find(i=>i.id===id);
+ if(existing){existing.qty+=qty;} else {cart.push({id,name,price,qty});}
+ localStorage.setItem("cart",JSON.stringify(cart));
+ updateCartCount();
+ showMiniCart();
+}
+function updateCartCount(){
+ let c=cart.reduce((a,b)=>a+b.qty,0);
+ cartCount.innerText=cartCountBottom.innerText=c;
+}
+function openCart(){document.getElementById("cartModal").style.display="block";showCart()}
+function closeCart(){document.getElementById("cartModal").style.display="none"}
+function showCart(){
+ let t=0;
+ cartItems.innerHTML="";
+ cart.forEach((i,x)=>{
+  t+=i.price*i.qty;
+  cartItems.innerHTML+=`
+   <div class="cartItem">
+    <div>${i.name}<br>Rs.${i.price} × ${i.qty}</div>
+    <div>
+     <button onclick="changeQty(${x},1)">+</button>
+     <button onclick="changeQty(${x},-1)">−</button>
+    </div>
+   </div>`;
+ });
+ total.innerText=t;
+}
+function changeQty(i,d){
+ cart[i].qty+=d;
+ if(cart[i].qty<=0) cart.splice(i,1);
+ localStorage.setItem("cart",JSON.stringify(cart));
+ updateCartCount();
+ showMiniCart();
+ showCart();
+}
+function nextPage(){if(page*perPage<filteredProducts.length){page++;render()}}
+function prevPage(){if(page>1){page--;render()}}
+function searchProducts(){page=1;applyFilters()}
+
+/* PRODUCT MODAL */function openProduct(n,i,d,p,id){
+  pName.innerText=n;
+  pImg.src=i;
+
+  let shortDesc = d.length > 120 ? d.substring(0,120) + "..." : d;
+  pDesc.innerText = shortDesc;
+
+  pPrice.innerText=p;
+  currentProductId=id;
+
+  document.getElementById("moreLink").onclick = function(){
+    window.location.href = `product.html?id=${id}`;
+  };
+
+  document.getElementById("productModal").style.display="block";
+}
+function closeProduct(){document.getElementById("productModal").style.display="none"}
+function shareProduct(){
+ let msg=`🛍️ *${pName.innerText}*\nID: ${currentProductId}\nPrice: Rs.${pPrice.innerText}\nOrder now via WhatsApp`;
+ window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+}
+function whatsappOrder(){
+ let msg=`Hello 👋\n\n🛒 *My Order Details*\n\n`;
+ let t=0;
+ cart.forEach((i,x)=>{
+  msg+=`${x+1}. ${i.name}\nID: ${i.id}\nQty: ${i.qty}\nRs.${i.price*i.qty}\n\n`;
+  t+=i.price*i.qty;
+ });
+ msg+=`*Total*: Rs.${t}`;
+ window.open(`https://wa.me/94725989935?text=${encodeURIComponent(msg)}`);
+}
+</script>
+
+</body>
+</html>
