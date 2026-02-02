@@ -77,7 +77,6 @@ header{
  box-shadow:0 8px 20px rgba(0,0,0,.15);  
  text-align:center;cursor:pointer;transition:.3s;position:relative  
 }  
-.card:hover{transform:translateY(-5px);box-shadow:0 8px 20px rgba(0,0,0,.15)}  
 .card img{width:100%;height:130px;object-fit:contain}  
 .price{color:#0d6efd;font-weight:bold}  
   
@@ -85,6 +84,33 @@ header{
 .pagination{text-align:center;margin:20px}  
 .pagination button{margin:3px;padding:6px 10px;border:none;border-radius:5px;cursor:pointer}  
   
+.mobile-category{
+  display:none;
+  text-align:center;
+  margin:8px 0 12px;
+}
+
+.mobile-category select{
+  width:85%;
+  max-width:280px;
+  padding:10px 10px;     /* 👈 height reduce */
+  font-size:20px;       /* 👈 text size reduce */
+  border-radius:6px;
+}
+
+/* MOBILE ONLY */
+@media (max-width: 768px){
+  .mobile-category{
+    display:block;
+  }
+}
+
+/* DESKTOP ONLY */
+@media (min-width: 769px){
+  .mobile-category{
+    display:none;
+  }
+}
 /* CART BAR */  
 .cart-bar{  
  position:sticky;bottom:0;background:#fff;  
@@ -105,9 +131,9 @@ header{
 .pagination{text-align:center;margin:20px}  
 footer{background:#222;color:#fff;text-align:center;padding:15px}  
 .whatsapp-float{  
- position:fixed;bottom:80px;right:20px;  
+ position:fixed;bottom:80px;right:10px;  
  background:#25d366;color:#fff;  
- font-size:40px;padding:10px 20px;border-radius:25%  
+ font-size:30px;padding:10px 15px;border-radius:25%  
 }  
 .close{  
   text-align:right;  
@@ -158,8 +184,12 @@ footer{background:#222;color:#fff;text-align:center;padding:15px}
  <h4>DPK Modern Marvels</h4>  
  <h4>0725989935</h4>  
    <a href="https://wa.me/94725989935" class="btn green" onclick="orderWhatsApp()">  
-   <i class="fab fa-whatsapp"></i> whatsapp  
-  </a>  </div>  <!-- OVERLAY -->  <div id="overlay" onclick="closeMenu()"></div>  <header>  
+   <i class="fab fa-whatsapp"></i> whatsapp
+  </a>  </div>  
+  
+  <!-- OVERLAY -->  <div id="overlay" onclick="closeMenu()"></div>  
+  
+  <header>  
  <div class="header-left">  
   <i class="fas fa-bars menu-btn" onclick="toggleMenu()"></i>  
   <h2 style="margin:0">DPK Modern Mravels</h2>   </div>  
@@ -172,7 +202,9 @@ footer{background:#222;color:#fff;text-align:center;padding:15px}
      <option value="high">Price: High → Low</option>  
    </select>  
  </div>  
-</div>   <!-- ✅ TOP PAGE INFO -->   <div id="topPageInfo" style="text-align:right;margin-top:6px;font-weight:bold"></div>  
+</div>   
+
+<!-- ✅ TOP PAGE INFO -->   <div id="topPageInfo" style="text-align:right;margin-top:6px;font-weight:bold"></div>  
 </div>  <section class="products">  
  <div class="grid" id="productGrid"></div>  
 </section>  <div class="pagination">  
@@ -180,10 +212,32 @@ footer{background:#222;color:#fff;text-align:center;padding:15px}
  <span id="pageInfo"></span>  
  <button onclick="nextPage()">Next ➡</button>  
  <div id="pageNumbers" style="margin-top:10px;"></div>  
-</div>  <div class="cart-bar">  
+</div>  
+<!-- MOBILE CATEGORY DROPDOWN -->
+
+<h3>Select Category👇</h3>
+<div class="mobile-category">
+  <select id="categorySelect" onchange="selectCategory(this.value)">
+    <option value="All">📦 All Categories</option>
+    <option value="Kitchen">🍳 Kitchen</option>
+    <option value="Baby">👶 Baby & Kids</option>
+    <option value="Electronics">🔌 Electronics</option>
+    <option value="Women">💄 Women / Beauty</option>
+    <option value="Men">👔 Men</option>
+    <option value="Home">🏠 Household</option>
+    <option value="Health">🏥 Health</option>
+    <option value="Bathroom">🛁 Bathroom</option>
+    <option value="Other">📂 Other</option>
+  </select>
+</div>
+<div class="cart-bar">  
  <div>Total Items: <span id="cartCountBottom">0</span></div>  
  <button onclick="openCart()">View Cart</button>  
-</div>  <!-- CART MODAL -->  <div id="cartModal">  
+</div>  
+
+
+<!-- CART MODAL -->  
+<div id="cartModal">  
  <div class="cartBox">  
   <h3>Your Cart</h3>  
   <div id="cartItems"></div>  
@@ -191,7 +245,9 @@ footer{background:#222;color:#fff;text-align:center;padding:15px}
   <button class="whatsapp" onclick="whatsappOrder()">Order via WhatsApp</button>  
   <button onclick="closeCart()">Close</button>  
  </div>  
-</div>  <!-- PRODUCT MODAL -->  <div id="productModal">  
+</div>  
+
+<!-- PRODUCT MODAL -->  <div id="productModal">  
  <div class="productBox">  
   <h3 id="pName"></h3>  
   <img id="pImg" style="width:100%;height:200px;object-fit:contain"><p id="pDesc"></p>  
@@ -222,10 +278,10 @@ Papa.parse(sheetUrl,{
  complete: r=>{  
   products=r.data.filter(p=>p['Product Name']);  
   products.forEach(p=>{  
-   p['Stock'] = "In Stock";  
+   p['Stock'] = "In Stock"; 
+  });  
    filteredProducts=products;  
   render();   
-  });  
   applyFilters();  
  }  
 });  
@@ -239,13 +295,17 @@ function closeMenu(){
  document.getElementById("sideMenu").classList.remove("show");  
  document.getElementById("overlay").classList.remove("show");  
 }  
-  
-function selectCategory(c){  
- activeCategory=c;  
- page=1;  
- closeMenu();  
- applyFilters();  
-}  
+  function selectCategory(c){
+  activeCategory = c;
+  page = 1;
+  closeMenu();
+
+  // 🔄 mobile dropdown sync
+  let dd = document.getElementById("categorySelect");
+  if(dd) dd.value = c;
+
+  applyFilters();
+}
   
 /* PRODUCTS */  
 function showSkeleton(){  
@@ -270,26 +330,50 @@ function sortProducts(){
  if(s==='high') filteredProducts.sort((a,b)=>parseFloat(b['Price (Rs)'])-parseFloat(a['Price (Rs)']));  
  render();  
 }  
-function render(){  
- let start=(page-1)*perPage,end=start+perPage;  
- productGrid.innerHTML="";  
- filteredProducts.slice(start,end).forEach((p,i)=>{  
-  productGrid.innerHTML+=`  
-  <div class="card" onclick="openProduct('${p['Product Name']}','${p['Main Image']}','${p['Description']||''}',${p['Price (Rs)']},'${p['Product ID']}')">  
-   <img src="${p['Main Image']}" loading="lazy">  
-   <h4>${p['Product Name']}</h4>  
-   <div class="price">Rs.${p['Price (Rs)']}</div>  
-   <select id="q${i}">${[1,2,3,4,5].map(n=>`<option>${n}</option>`).join("")}</select>  
-   <button onclick="event.stopPropagation(); addToCart('${p['Product Name']}',${p['Price (Rs)']},'q${i}','${p['Product ID']}')">  
-    Add to Cart  
-   </button>  
-  </div>`;  
- });  
-  let totalPages=Math.ceil(filteredProducts.length/perPage);  
- pageInfo.innerText=`Page ${page}`;  
-  topPageInfo.innerText=`Page ${page} / ${totalPages}`;  
-  renderPageNumbers(totalPages);  
-}  
+function render(){
+  let start = (page-1) * perPage;
+  let end   = start + perPage;
+
+  let html = "";  
+
+  filteredProducts.slice(start, end).forEach((p, i) => {
+    html += `
+      <div class="card" onclick="openProduct(
+        '${p['Product Name']}',
+        '${p['Main Image']}',
+        '${p['Description'] || ''}',
+        ${p['Price (Rs)']},
+        '${p['Product ID']}'
+      )">
+        <img src="${p['Main Image']}" loading="lazy">
+        <h4>${p['Product Name']}</h4>
+        <div class="price">Rs.${p['Price (Rs)']}</div>
+
+        <select id="q${i}">
+          ${[1,2,3,4,5].map(n=>`<option>${n}</option>`).join("")}
+        </select>
+
+        <button onclick="event.stopPropagation();
+          addToCart(
+            '${p['Product Name']}',
+            ${p['Price (Rs)']},
+            'q${i}',
+            '${p['Product ID']}'
+          )">
+          Add to Cart
+        </button>
+      </div>
+    `;
+  });
+
+  // ✅ ONLY ONE DOM UPDATE
+  productGrid.innerHTML = html;
+
+  let totalPages = Math.ceil(filteredProducts.length / perPage);
+  pageInfo.innerText = `Page ${page}`;
+  topPageInfo.innerText = `Page ${page} / ${totalPages}`;
+  renderPageNumbers(totalPages);
+}
   
 /* MINI-CART */  
 function toggleMiniCart(){  
@@ -371,15 +455,39 @@ function prevPage(){
     render();  
     scrollToTop();  
   }  
-}  
-  function renderPageNumbers(totalPages){
+} function renderPageNumbers(totalPages){
   let pn = document.getElementById("pageNumbers");
   pn.innerHTML = "";
 
-  for(let i = 1; i <= totalPages; i++){
+  let maxVisible = 2; // current pageக்கு முன்னும் பின்னும் எத்தனை pages
+  let start = Math.max(1, page - maxVisible);
+  let end   = Math.min(totalPages, page + maxVisible);
+
+  // First page
+  if(start > 1){
+    pn.innerHTML += `<button onclick="goToPage(1)">1</button>`;
+    if(start > 2){
+      pn.innerHTML += `<span style="margin:0 6px">...</span>`;
+    }
+  }
+
+  // Middle pages
+  for(let i = start; i <= end; i++){
     pn.innerHTML += `
-      <button onclick="goToPage(${i})">${i}</button>
+      <button 
+        onclick="goToPage(${i})"
+        style="${i === page ? 'background:#0d6efd;color:#fff' : ''}">
+        ${i}
+      </button>
     `;
+  }
+
+  // Last page
+  if(end < totalPages){
+    if(end < totalPages - 1){
+      pn.innerHTML += `<span style="margin:0 6px">...</span>`;
+    }
+    pn.innerHTML += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
   }
 }
 
