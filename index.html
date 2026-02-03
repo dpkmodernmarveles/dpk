@@ -173,12 +173,12 @@ footer{background:#222;color:#fff;text-align:center;padding:15px}
  <button onclick="selectCategory('Kitchen')"><i class="fas fa-utensils"></i> Kitchen Items</button>  
  <button onclick="selectCategory('Baby')"><i class="fas fa-baby"></i> Baby & Kids</button>  
  <button onclick="selectCategory('Electronics')"><i class="fas fa-plug"></i> Electronics</button>  
- <button onclick="selectCategory('Women')"><i class="fas fa-spa"></i> Women / Beauty</button>  
- <button onclick="selectCategory('Men')"><i class="fas fa-boy"></i> Men</button>  
+ <button onclick="selectCategory('Fashion')">👫 Fashion / Beauty</button>  
+ <button onclick="selectCategory('Daily')">💫 Daily usage</button>  
  <button onclick="selectCategory('Home')"><i class="fas fa-home"></i> Household items</button>  
  <button onclick="selectCategory('Health')"><i class="fas fa-hospital"></i> Health</button>  
  <button onclick="selectCategory('Bathroom')"><i class="fas fa-bath"></i>Bathroom products</button>  
- <button onclick="selectCategory('Other')"><i class="fas fa-other"></i>Other</button>   <br>  
+ <button onclick="selectCategory('Other')">⚙ Tools & Other</button>   <br>  
  <h3>content us</h3>  
  <hr>  
  <h4>DPK Modern Marvels</h4>  
@@ -193,7 +193,28 @@ footer{background:#222;color:#fff;text-align:center;padding:15px}
  <div class="header-left">  
   <i class="fas fa-bars menu-btn" onclick="toggleMenu()"></i>  
   <h2 style="margin:0">DPK Modern Mravels</h2>   </div>  
- <div class="cart" onclick="toggleMiniCart()">🛒 Cart (<span id="cartCount">0</span>)</div>  </header>  <!-- MINI-CART -->  <div id="miniCart"></div>  <div style="padding:15px">  
+ <div class="cart" onclick="toggleMiniCart()">🛒 Cart (<span id="cartCount">0</span>)</div> 
+ </header>  
+ 
+ <!-- MOBILE CATEGORY DROPDOWN -->
+<h3>Select Category👇</h3>
+<div class="mobile-category">
+  <select id="categorySelect" onchange="selectCategory(this.value)">
+    <option value="All">📦 All Categories</option>
+    <option value="Kitchen">🍳 Kitchen</option>
+    <option value="Baby">👶 Baby & Kids</option>
+    <option value="Electronics">🔌 Electronics</option>
+    <option value="Fashion">👫 Fashion / Beauty</option>
+    <option value="Daily">💫 Daily usage</option>
+    <option value="Home">🏠 Household</option>
+    <option value="Health">🏥 Health</option>
+    <option value="Bathroom">🛁 Bathroom</option>
+    <option value="Other">⚙ Tools & Other</option>
+  </select>
+</div>
+
+ 
+ <!-- MINI-CART -->  <div id="miniCart"></div>  <div style="padding:15px">  
  <div class="filters">  
    <input type="text" id="searchInput" placeholder="🔍 Search products..." onkeyup="searchProducts()" style="flex:1;padding:10px;font-size:16px">  
    <select id="sortSelect" onchange="sortProducts()" style="padding:10px;font-size:16px">  
@@ -213,23 +234,7 @@ footer{background:#222;color:#fff;text-align:center;padding:15px}
  <button onclick="nextPage()">Next ➡</button>  
  <div id="pageNumbers" style="margin-top:10px;"></div>  
 </div>  
-<!-- MOBILE CATEGORY DROPDOWN -->
 
-<h3>Select Category👇</h3>
-<div class="mobile-category">
-  <select id="categorySelect" onchange="selectCategory(this.value)">
-    <option value="All">📦 All Categories</option>
-    <option value="Kitchen">🍳 Kitchen</option>
-    <option value="Baby">👶 Baby & Kids</option>
-    <option value="Electronics">🔌 Electronics</option>
-    <option value="Women">💄 Women / Beauty</option>
-    <option value="Men">👔 Men</option>
-    <option value="Home">🏠 Household</option>
-    <option value="Health">🏥 Health</option>
-    <option value="Bathroom">🛁 Bathroom</option>
-    <option value="Other">📂 Other</option>
-  </select>
-</div>
 <div class="cart-bar">  
  <div>Total Items: <span id="cartCountBottom">0</span></div>  
  <button onclick="openCart()">View Cart</button>  
