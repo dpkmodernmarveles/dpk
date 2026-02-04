@@ -534,5 +534,18 @@ function whatsappOrder(){
  msg+=`*Total*: Rs.${t}`;  
  window.open(`https://wa.me/94725989935?text=${encodeURIComponent(msg)}`);  
 }  
+history.pushState(null, null, location.href);
+
+  window.addEventListener("popstate", function (e) {
+    let confirmExit = confirm("Are you sure you want to exit?");
+
+    if (confirmExit) {
+      // allow back (exit)
+      history.back();
+    } else {
+      // stay on same page
+      history.pushState(null, null, location.href);
+    }
+  });
 </script>  </body>  
 </html>  
