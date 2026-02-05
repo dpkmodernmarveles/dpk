@@ -602,38 +602,50 @@ function whatsappOrder(){
  msg+=`*Total*: Rs.${t}`;  
  window.open(`https://wa.me/94725989935?text=${encodeURIComponent(msg)}`);  
 }  
-
 let allowExit = false;
 
-  // push initial state
-  history.pushState(null, null, location.href);
+// push initial state
+history.pushState(null, null, location.href);
 
-  window.addEventListener("popstate", function () {
-    if (!allowExit) {
-      showExitPopup();
-      history.pushState(null, null, location.href);
-    }
-  });
+window.addEventListener("popstate", function () {
 
-  function showExitPopup(){
-    document.getElementById("exitPopup").style.display = "flex";
+  // 🔴 If popup already open → block back
+  let popup = document.getElementById("exitPopup");
+  if (popup.style.display === "flex") {
+    history.pushState(null, null, location.href);
+    return;
   }
 
-  function stayOnPage(){
-    document.getElementById("exitPopup").style.display = "none";
+  // 🟢 If NOT on first page → go to first page
+  if (page > 1) {
+    page = 1;
+    render();
+    scrollToTop();
+    history.pushState(null, null, location.href);
+    return;
   }
 
-  function exitPage(){
-  document.getElementById("exitPopup").style.display = "none";
+  // 🔵 If on first page → show exit popup
+  if (!allowExit) {
+    showExitPopup();
+    history.pushState(null, null, location.href);
+  }
+});
 
-  // allow exit
-  allowExit = true;
-
-  // 🔥 auto back trigger (acts like exit)
-  setTimeout(() => {
-    history.go(-1);
-  }, 50);
+function showExitPopup(){
+  document.getElementById("exitPopup").style.display = "flex";
 }
+
+function stayOnPage(){
+  document.getElementById("exitPopup").style.display = "none";
+}
+
+function exitPage(){
+  allowExit = true;
+  document.getElementById("exitPopup").style.display = "none";
+  setTimeout(() => history.back(), 50);
+}
+
 
 </script>  
 </body>  
