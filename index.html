@@ -166,6 +166,63 @@ footer{background:#222;color:#fff;text-align:center;padding:15px}
  z-index:1500;  
 }  
 #overlay.show{display:block;}  
+
+/* EXIT POPUP */
+.exit-popup{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  z-index:5000;
+  justify-content:center;
+  align-items:center;
+}
+
+.exit-box{
+  background:#fff;
+  padding:25px;
+  border-radius:12px;
+  width:90%;
+  max-width:320px;
+  text-align:center;
+  animation:pop .25s ease;
+}
+
+.exit-box h3{
+  margin-bottom:20px;
+  font-size:18px;
+}
+
+.exit-actions{
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+}
+
+.exit-actions button{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.btn-no{
+  background:#6c757d;
+  color:#fff;
+}
+
+.btn-yes{
+  background:#dc3545;
+  color:#fff;
+}
+
+@keyframes pop{
+  from{transform:scale(0.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+
 </style>  </head>  
 <body>  <!-- SIDE CATEGORY MENU -->  <div id="sideMenu" class="side-menu">  
  <h3>Categories</h3>  
@@ -251,6 +308,17 @@ footer{background:#222;color:#fff;text-align:center;padding:15px}
   <button onclick="closeCart()">Close</button>  
  </div>  
 </div>  
+
+<!-- EXIT CONFIRM POPUP -->
+<div id="exitPopup" class="exit-popup">
+  <div class="exit-box">
+    <h3>Are you sure you want to exit?</h3>
+    <div class="exit-actions">
+      <button class="btn-no" onclick="stayOnPage()">No</button>
+      <button class="btn-yes" onclick="exitPage()">Yes</button>
+    </div>
+  </div>
+</div>
 
 <!-- PRODUCT MODAL -->  <div id="productModal">  
  <div class="productBox">  
@@ -534,18 +602,39 @@ function whatsappOrder(){
  msg+=`*Total*: Rs.${t}`;  
  window.open(`https://wa.me/94725989935?text=${encodeURIComponent(msg)}`);  
 }  
-history.pushState(null, null, location.href);
 
-  window.addEventListener("popstate", function (e) {
-    let confirmExit = confirm("Are you sure you want to exit?");
+let allowExit = false;
 
-    if (confirmExit) {
-      // allow back (exit)
-      history.back();
-    } else {
-      // stay on same page
+  // push initial state
+  history.pushState(null, null, location.href);
+
+  window.addEventListener("popstate", function () {
+    if (!allowExit) {
+      showExitPopup();
       history.pushState(null, null, location.href);
     }
   });
-</script>  </body>  
+
+  function showExitPopup(){
+    document.getElementById("exitPopup").style.display = "flex";
+  }
+
+  function stayOnPage(){
+    document.getElementById("exitPopup").style.display = "none";
+  }
+
+  function exitPage(){
+  document.getElementById("exitPopup").style.display = "none";
+
+  // allow exit
+  allowExit = true;
+
+  // 🔥 auto back trigger (acts like exit)
+  setTimeout(() => {
+    history.go(-1);
+  }, 50);
+}
+
+</script>  
+</body>  
 </html>  
